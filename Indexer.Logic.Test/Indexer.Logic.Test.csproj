@@ -6,7 +6,7 @@
     <ProjectGuid>{33DAFDF0-6426-4C94-934A-47F87281F2A6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Indexer.Logic.Test</RootNamespace>
+    <RootNamespace>Index.Logic.Test</RootNamespace>
     <AssemblyName>Indexer.Logic.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -54,6 +54,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Indexer.Logic\Indexer.Logic.csproj">
+      <Project>{D7A908C3-FDAE-47C2-A7C1-7C6AEE10F9A5}</Project>
+      <Name>Indexer.Logic</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

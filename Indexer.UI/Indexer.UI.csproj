@@ -7,7 +7,7 @@
     <ProjectGuid>{C4779C4E-E3EA-411F-AEC8-22CE9B7078CE}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Indexer.UI</RootNamespace>
+    <RootNamespace>Index.UI</RootNamespace>
     <AssemblyName>Indexer.UI</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -46,6 +46,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Indexer.Logic\Indexer.Logic.csproj">
+      <Project>{d7a908c3-fdae-47c2-a7c1-7c6aee10f9a5}</Project>
+      <Name>Indexer.Logic</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

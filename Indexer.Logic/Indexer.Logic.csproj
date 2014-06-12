@@ -7,7 +7,7 @@
     <ProjectGuid>{D7A908C3-FDAE-47C2-A7C1-7C6AEE10F9A5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Indexer.Logic</RootNamespace>
+    <RootNamespace>Index.Logic</RootNamespace>
     <AssemblyName>Indexer.Logic</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -40,7 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Indexer.cs" />
+    <Compile Include="ITextParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleByWordParser.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
