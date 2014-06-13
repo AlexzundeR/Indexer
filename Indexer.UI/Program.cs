@@ -12,7 +12,9 @@ namespace Index.UI
         {
             WriteHelp();
             Boolean exit = false;
+            //Созаем парсер
             var textParser = new SimpleByWordParser();
+            //Создаем индексатор на основе простого парсера
             var indexer = new Indexer(textParser);
             while (!exit)
             {
