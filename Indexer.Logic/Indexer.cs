@@ -65,7 +65,9 @@ namespace Index.Logic
         public void AddFile(String pathToFile)
         {
             if (!File.Exists(pathToFile))
-                throw new ArgumentException("Файла не существует!");
+                throw new FileNotFoundException("Файла не существует!");
+            if (_registeredFiles.Contains(pathToFile))
+                throw new Exception("Такой файл уже был зарегестрирован!");
             //Если файл существует, добавляем его в индекс и начинаем за ним следить
             CreateFileWatcher(pathToFile);
             AddFileToIndex(pathToFile);
@@ -78,12 +80,13 @@ namespace Index.Logic
         public void AddDirectory(String pathToDirectory)
         {
             if (!Directory.Exists(pathToDirectory))
-                throw new ArgumentException("Каталог не существует!");
-            //Если каталог существует, то начинаем следить за изменениями в каталоге
-            CreateDirectoryWatcher(pathToDirectory);
+                throw new DirectoryNotFoundException("Каталог не существует!");
+            if (_registeredFiles.Contains(pathToDirectory))
+                throw new Exception("Такой каталог уже был зарегестрирован!");
             //Регистрируем
             _registeredDirectories.Add(pathToDirectory);
-
+            //Если каталог существует, то начинаем следить за изменениями в каталоге
+            CreateDirectoryWatcher(pathToDirectory);
             //И каждый файл внутри добавляем в индекс со слежкой
             var files = Directory.GetFiles(pathToDirectory);
             foreach (var file in files)
@@ -238,7 +241,6 @@ namespace Index.Logic
                             AddFile(file);
                         }
                     }
-                    Debug.WriteLine("Created " + path);
                 };
 
                 watcher.Renamed += (s, e) =>
@@ -256,7 +258,6 @@ namespace Index.Logic
                             RenameFileInIndex(file, oldPath + "\\" + Path.GetFileName(file));
                         }
                     }
-                    Debug.WriteLine("Renamed " + path);
                 };
             }
             if (!forDirectory)
@@ -276,7 +277,6 @@ namespace Index.Logic
                             RemoveFileFromIndex(file);
                         }
                     }
-                    Debug.WriteLine("Deleted " + path);
                 };
                 
                 watcher.Changed += (s, e) =>
@@ -293,7 +293,6 @@ namespace Index.Logic
                             UpdateFileInIndex(file);
                         }
                     }
-                    Debug.WriteLine("Changed " + path);
                 };
             }
             

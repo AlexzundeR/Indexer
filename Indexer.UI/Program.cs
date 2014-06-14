@@ -18,56 +18,63 @@ namespace Index.UI
             var indexer = new Indexer(textParser);
             while (!exit)
             {
-                var res = Console.ReadLine()??"";
+                var res = Console.ReadLine() ?? "";
                 exit = res.ToLowerInvariant().Equals("q");
-                if (!exit)
+                try
                 {
-                    if (res.StartsWith("addc"))
+                    if (!exit)
                     {
-                        var directoryPath = res.Remove(0, 4).Trim();
-                        indexer.AddDirectory(directoryPath);
-                    }
-                    else if (res.StartsWith("add"))
-                    {
-                        var filePath = res.Remove(0, 3).Trim();
-                        indexer.AddFile(filePath);
-                    }
-                    else  if (res.StartsWith("?"))
-                    {
-                        var quest = res.Remove(0, 1).Trim();
-                        var result = indexer.Find(quest);
-                        if (result.Count == 0)
+                        if (res.StartsWith("addc"))
                         {
-                            Console.WriteLine("В коллекции нет файлов!");
+                            var directoryPath = res.Remove(0, 4).Trim();
+                            indexer.AddDirectory(directoryPath);
                         }
-                        else
+                        else if (res.StartsWith("add"))
                         {
-                            foreach (var finddFiles in result)
+                            var filePath = res.Remove(0, 3).Trim();
+                            indexer.AddFile(filePath);
+                        }
+                        else if (res.StartsWith("?"))
+                        {
+                            var quest = res.Remove(0, 1).Trim();
+                            var result = indexer.Find(quest);
+                            if (result.Count == 0)
                             {
-                                Console.WriteLine(finddFiles);
+                                Console.WriteLine("В коллекции нет файлов!");
+                            }
+                            else
+                            {
+                                foreach (var finddFiles in result)
+                                {
+                                    Console.WriteLine(finddFiles);
+                                }
                             }
                         }
-                    } else if (res.StartsWith("files"))
-                    {
-                        var files = indexer.GetAddedFiles();
-                        foreach (var file in files)
+                        else if (res.StartsWith("files"))
                         {
-                            Console.WriteLine(file);
+                            var files = indexer.GetAddedFiles();
+                            foreach (var file in files)
+                            {
+                                Console.WriteLine(file);
+                            }
+                        }
+                        else if (res.StartsWith("cats"))
+                        {
+                            var cats = indexer.GetAddedCatalogs();
+                            foreach (var cat in cats)
+                            {
+                                Console.WriteLine(cat);
+                            }
+                        }
+                        else if (res.StartsWith("help"))
+                        {
+                            WriteHelp();
                         }
                     }
-                    else if (res.StartsWith("cats"))
-                    {
-                        var cats = indexer.GetAddedCatalogs();
-                        foreach (var cat in cats)
-                        {
-                            Console.WriteLine(cat);
-                        }
-                    }
-                    else if (res.StartsWith("help"))
-                    {
-                        WriteHelp();
-                    }
-
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
             }
         }
@@ -80,7 +87,7 @@ namespace Index.UI
             Console.WriteLine("cats - выведет список добавленных каталогов");
             Console.WriteLine("? [слово] - показать в каких файлах встречается это слово");
             Console.WriteLine("q - выход");
-            Console.WriteLine("help - выведет подсказку");   
+            Console.WriteLine("help - выведет подсказку");
         }
     }
 }
