@@ -14,6 +14,6 @@ namespace Index.Logic
         /// </summary>
         /// <param name="text">Путь к файлу с текстом</param>
         /// <returns>Список слов</returns>
-        List<String> GetWordList(String text);
+        IEnumerable<String> GetWordList(String text);
     }
 }

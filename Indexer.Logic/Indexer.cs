@@ -9,16 +9,41 @@ using System.Threading.Tasks;
 
 namespace Index.Logic
 {
-    public sealed class Indexer
+    public sealed class Indexer:IDisposable
     {
         private Mutex _syncMutex;
         private Mutex _updateSyncMutex;
 
+        private List<FileSystemWatcher> _watchers;
 
         private ITextParser _textParser;    //Парсер файлов, ему передаются фалы на обработку для получения списка ключевых слов.
         private Dictionary<String, List<String>> _reversIndex;      //Обратный индекс. На каждое ключевое слово хранит список файлов, в котором оно содержится
         private List<String> _registeredFiles;      //Список зарегестрированных для мониторинга и индексации файлов
         private List<String> _registeredDirectories;    //Список зарегестрированных для мониторинга каталогов
+
+        /// <summary>
+        /// Парсер потенциально может обрабатывать любые файлы (даже URL),
+        /// Этот конкретный парсер может кушать только txt файлы
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        private string GetText(string filePath)
+        {
+            var ext = Path.GetExtension(filePath);
+            try
+            {
+                if (ext != null && ext.Equals(".txt"))
+                {
+                    return File.ReadAllText(filePath, Encoding.UTF8);
+                }
+                else
+                    return "";
+            }
+            catch{
+                //Словили ошибку чтения файла. Вернем пустую строку
+            }
+            return "";
+        }
 
         /// <summary>
         /// Конструктор
@@ -32,6 +57,8 @@ namespace Index.Logic
             _registeredDirectories = new List<string>();
             _syncMutex = new Mutex();
             _updateSyncMutex = new Mutex();
+            _watchers = new List<FileSystemWatcher>();
+            _disposed = false;
         }
         /// <summary>
         /// Есть ли на данный момент зарегестрированные фалы
@@ -119,24 +146,30 @@ namespace Index.Logic
         {
             //Ожидаем выполнения других операций
             _syncMutex.WaitOne();
-            //Регистрируем файл
-            _registeredFiles.Add(filePath);
-            //От парсера получаем список ключевых слов
-            var words = _textParser.GetWordList(filePath);
-            //Заполняем индекс
-            foreach (var word in words)
+            try
             {
-                List<String> files;
-                if (_reversIndex.TryGetValue(word, out files))
+                //Регистрируем файл
+                _registeredFiles.Add(filePath);
+                //От парсера получаем список ключевых слов
+                var words = _textParser.GetWordList(GetText(filePath));
+                //Заполняем индекс
+                foreach (var word in words)
                 {
-                    files.Add(filePath);
-                }
-                else
-                {
-                    _reversIndex.Add(word, new List<string>() { filePath });
+                    List<String> files;
+                    if (_reversIndex.TryGetValue(word, out files))
+                    {
+                        files.Add(filePath);
+                    }
+                    else
+                    {
+                        _reversIndex.Add(word, new List<string>() { filePath });
+                    }
                 }
             }
-            _syncMutex.ReleaseMutex();
+            finally
+            {
+                _syncMutex.ReleaseMutex();
+            }
         }
         /// <summary>
         /// Переиндексируем файл в индексе
@@ -160,15 +193,21 @@ namespace Index.Logic
         {
             //Ожидаем выполнения других операций
             _syncMutex.WaitOne();
-            //Удаляем из зарегестрированных
-            _registeredFiles.Remove(filePath);
-            //Удаляем упоминание о файле из индекса
-            foreach (var index in _reversIndex)
+            try
             {
-                index.Value.Remove(filePath);
+                //Удаляем из зарегестрированных
+                _registeredFiles.Remove(filePath);
+                //Удаляем упоминание о файле из индекса
+                foreach (var index in _reversIndex)
+                {
+                    index.Value.Remove(filePath);
+                }
             }
-            //Осаобождаем мьютекс
-            _syncMutex.ReleaseMutex();
+            finally
+            {
+                //Осаобождаем мьютекс
+                _syncMutex.ReleaseMutex();
+            }
         }
         /// <summary>
         /// Переименовывает файл в индексе, без переиндексации
@@ -179,20 +218,26 @@ namespace Index.Logic
         {
             CreateFileWatcher(newPath);
             _syncMutex.WaitOne();
-            //Удаляем старые записи, добавляем новые
-            _registeredFiles.Remove(oldPath);
-            _registeredFiles.Add(newPath);
-            //У каждого ключевого слова
-            foreach (var index in _reversIndex)
+            try
             {
-                if (index.Value.Contains(oldPath))
+                //Удаляем старые записи, добавляем новые
+                _registeredFiles.Remove(oldPath);
+                _registeredFiles.Add(newPath);
+                //У каждого ключевого слова
+                foreach (var index in _reversIndex)
                 {
-                    //Старое упомниаение меняем на новое
-                    index.Value.Remove(oldPath);
-                    index.Value.Add(newPath);
+                    if (index.Value.Contains(oldPath))
+                    {
+                        //Старое упомниаение меняем на новое
+                        index.Value.Remove(oldPath);
+                        index.Value.Add(newPath);
+                    }
                 }
             }
-            _syncMutex.ReleaseMutex();
+            finally
+            {
+                _syncMutex.ReleaseMutex();
+            }
         }
 
         private void CreateDirectoryWatcher(String directoryPath)
@@ -222,8 +267,6 @@ namespace Index.Logic
             //Будем следить за записью в файл, за переименованием файла или каталога
             watcher.NotifyFilter = NotifyFilters.LastWrite
            | NotifyFilters.FileName | NotifyFilters.DirectoryName; ;
-
-            
 
             if (forDirectory)
             {
@@ -295,10 +338,33 @@ namespace Index.Logic
                     }
                 };
             }
+
+            _watchers.Add(watcher);
             
             return watcher;
         }
 
+        private Boolean _disposed; 
 
+        protected void Dispose(Boolean disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    foreach (var watcher in _watchers)
+                    {
+                        watcher.Dispose();
+                    }
+                }
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

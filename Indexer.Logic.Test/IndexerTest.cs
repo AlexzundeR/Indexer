@@ -17,11 +17,16 @@ namespace Index.Logic.Test
         public void SimpleByWordParserTest()
         {
             SimpleByWordParser parser = new SimpleByWordParser();
+
+            var testFilesDirectory = Environment.CurrentDirectory;
+            var testFileName = @"text.txt";
+            CreateTestFile(testFilesDirectory, testFileName);
+
             var words = parser.GetWordList("Abc aaa d.");
 
-            Assert.AreEqual("Abc", words[0]);
-            Assert.AreEqual("aaa", words[1]);
-            Assert.AreEqual("d", words[2]);
+            Assert.AreEqual("Abc", words.ElementAt(0));
+            Assert.AreEqual("aaa", words.ElementAt(1));
+            Assert.AreEqual("d", words.ElementAt(2));
         }
         [Test]
         public void MainTest()
@@ -29,7 +34,7 @@ namespace Index.Logic.Test
             SimpleByWordParser parser = new SimpleByWordParser();
             Indexer indexer = new Indexer(parser);
 
-            var testFilesDirectory = @"D:\MyProjects\Tests";
+            var testFilesDirectory = Environment.CurrentDirectory;
             var testFileName = @"text.txt";
             CreateTestFile(testFilesDirectory,testFileName);
             indexer.AddFile(testFilesDirectory+"\\"+testFileName);
@@ -57,7 +62,7 @@ namespace Index.Logic.Test
             SimpleByWordParser parser = new SimpleByWordParser();
             Indexer indexer = new Indexer(parser);
 
-            var testFilesDirectory = @"D:\MyProjects\Tests";
+            var testFilesDirectory = Environment.CurrentDirectory;
             var testFileName = @"text.txt";
             CreateTestFile(testFilesDirectory, testFileName);
             indexer.AddFile(testFilesDirectory + "\\" + testFileName);
@@ -98,7 +103,7 @@ namespace Index.Logic.Test
 
         private void CreateTestFile(String dirName, String fileName)
         {
-            Directory.CreateDirectory(dirName);
+            dirName = dirName ?? Environment.CurrentDirectory;
             using (var file = File.CreateText(dirName + "\\" + fileName))
             {
                 file.Write("AAA BBB CCC DDD");

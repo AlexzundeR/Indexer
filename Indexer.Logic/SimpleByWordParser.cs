@@ -23,10 +23,8 @@ namespace Index.Logic
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public List<string> GetWordList(string filePath)
+        public IEnumerable<string> GetWordList(string text)
         {
-            //Получаем текст
-            var text = GetText(filePath);
             //Пробегаемся регуляркой и ищем слова
             var matchCollection = _byWordParseRegex.Matches(text);
             var words = new List<String>();
@@ -37,20 +35,7 @@ namespace Index.Logic
             return words;
         }
 
-        /// <summary>
-        /// Парсер потенциально может обрабатывать любые файлы (даже URL),
-        /// Этот конкретный парсер может кушать только txt файлы
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        private string GetText(string filePath)
-        {
-            var ext = Path.GetExtension(filePath);
-            if (ext != null && ext.Equals(".txt"))
-                return File.ReadAllText(filePath, Encoding.UTF8);
-            else
-                return "";
-        }
+     
 
     }
 }
